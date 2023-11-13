@@ -1,0 +1,3 @@
+/Users/zakerden1234/Desktop/E-Commerce-System/cmake-build-debug/CMakeFiles/E_Commerce_System.dir
+/Users/zakerden1234/Desktop/E-Commerce-System/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/zakerden1234/Desktop/E-Commerce-System/cmake-build-debug/CMakeFiles/rebuild_cache.dir
