@@ -104,3 +104,41 @@ private:
     string color;
     string material;
 };
+
+
+class Order {
+public:
+    Order(int id, const string& customer) : orderID(id), customer(customer), orderStatus("Pending") {}
+
+    void addProduct(const Product& product) {
+        products.push_back(product);
+    }
+
+    double calculateTotalCost() const {
+        double totalCost = 0.0;
+        for (const auto& product : products) {
+            totalCost += product.calculateTotalCost();
+        }
+        return totalCost;
+    }
+
+    void changeOrderStatus(const std::string& status) {
+        orderStatus = status;
+    }
+
+    void displayDetails() const {
+        std::cout << "Order ID: " << orderID << ", Customer: " << customer << ", Order Status: " << orderStatus
+                  << ", Total Cost: $" << calculateTotalCost() << std::endl;
+
+        for (const auto& product : products) {
+            product.displayDetails();
+            std::cout << std::endl;
+        }
+    }
+
+private:
+    int orderID;
+    std::string customer;
+    std::vector<Product> products;
+    std::string orderStatus;
+};
