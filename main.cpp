@@ -175,3 +175,87 @@ public:
 private:
     vector<Product> products;
 };
+
+class Inventory {
+public:
+    // Manage stock levels (add and subtract quantities)
+    void manageStock(string productType, int quantity) {
+        for (auto& product : products) {
+            if (product.getType() == productType) {
+                product.setQuantityInStock(product.getQuantityInStock() + quantity);
+                break;
+            }
+        }
+    }
+
+    // Notify when products are low in stock
+    void notifyLowStock() const {
+        for (const auto& product : products) {
+            if (product.getQuantityInStock() < lowStockThreshold) {
+                std::cout << "Low stock for product: " << product.getName() << std::endl;
+            }
+        }
+    }
+
+    // Generate a list of products that need restocking
+    std::vector<Product> generateRestockList() const {
+        std::vector<Product> restockList;
+        for (const auto& product : products) {
+            if (product.getQuantityInStock() < lowStockThreshold) {
+                restockList.push_back(product);
+            }
+        }
+        return restockList;
+    }
+
+private:
+    std::vector<Product> products;
+    int lowStockThreshold = 10;
+};
+
+
+// Function to read product information from a configuration file
+void readProductConfig(const std::string& filename, ProductCatalog& catalog) {
+    std::ifstream file(filename);
+    std::string line;
+
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string productType, productName;
+        double price;
+        int quantity;
+
+        iss >> productType >> productName >> price >> quantity >> productType;
+
+        if (productType == "Electronics") {
+            std::string brand, model, powerConsumption;
+            iss >> brand >> model >> powerConsumption;
+            Electronics electronic(productType, productName, price, quantity, brand, model, powerConsumption);
+            catalog.addProduct(electronic);
+        } else if (productType == "Books") {
+            std::string author, genre, ISBN;
+            iss >> author >> genre >> ISBN;
+            Books book(productType, productName, price, quantity, author, genre, ISBN);
+            catalog.addProduct(book);
+        } else if (productType == "Clothing") {
+            std::string size, color, material;
+            iss >> size >> color >> material;
+            Clothing clothing(productType, productName, price, quantity, size, color, material);
+            catalog.addProduct(clothing);
+        }
+    }
+}
+
+// Example usage
+int main() {
+    // Create an instance of the product catalog
+    ProductCatalog catalog;
+
+    // Read product information from a configuration file
+    readProductConfig("product_config.txt", catalog);
+
+    // Display products in the catalog
+    catalog.viewProducts();
+
+    return 0;
+}
