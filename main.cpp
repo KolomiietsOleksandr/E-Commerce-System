@@ -122,7 +122,7 @@ public:
         return totalCost;
     }
 
-    void changeOrderStatus(const std::string& status) {
+    void changeOrderStatus(const string& status) {
         orderStatus = status;
     }
 
@@ -138,7 +138,40 @@ public:
 
 private:
     int orderID;
-    std::string customer;
-    std::vector<Product> products;
-    std::string orderStatus;
+    string customer;
+    vector<Product> products;
+    string orderStatus;
+};
+
+
+class ProductCatalog {
+public:
+    void addProduct(const Product& product) {
+        products.push_back(product);
+    }
+
+    void updateProduct(const Product& updatedProduct) {
+        for (auto& product : products) {
+            if (product.getType() == updatedProduct.getType()) {
+                product = updatedProduct;
+                break;
+            }
+        }
+    }
+
+    void removeProduct(string productType) {
+        products.erase(remove_if(products.begin(), products.end(),
+                                      [productType](const Product& p) { return p.getType() == productType; }),
+                       products.end());
+    }
+
+    void viewProducts() const {
+        for (const auto& product : products) {
+            product.displayDetails();
+            std::cout << std::endl;
+        }
+    }
+
+private:
+    vector<Product> products;
 };
