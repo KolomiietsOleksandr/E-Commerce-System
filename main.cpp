@@ -101,16 +101,25 @@ private:
 
 class Order {
 public:
-    Order(int id, const string& customer) : orderID(id), customer(customer), orderStatus("Pending") {}
+    Order(int id, const string& customer, const vector<Product>& productCatalog)
+            : orderID(id), customer(customer), orderStatus("Pending"), productCatalog(productCatalog) {}
 
-    void addProduct(const Product& product) {
-        products.push_back(product);
+    void addProduct(const string& productName) {
+        auto productIt = find_if(productCatalog.begin(), productCatalog.end(),
+                                 [productName](const Product& p) { return p.getName() == productName; });
+
+        if (productIt != productCatalog.end()) {
+            productsInCart.push_back(*productIt);
+            cout << "Added product to cart: " << productName << endl;
+        } else {
+            cout << "Product not found in catalog: " << productName << endl;
+        }
     }
 
     double calculateTotalCost() const {
         double totalCost = 0.0;
-        for (const auto& product : products) {
-            totalCost += product.calculateTotalCost();
+        for (const auto& product : productsInCart) {
+            totalCost += product.getPrice();
         }
         return totalCost;
     }
@@ -119,21 +128,43 @@ public:
         orderStatus = status;
     }
 
-    void displayDetails() const {
-        cout << "Order ID: " << orderID << ", Customer: " << customer << ", Order Status: " << orderStatus
-             << ", Total Cost: $" << calculateTotalCost() << endl;
+    void displayOrder() {
+        cout << "\n--------------------------------Order Details-------------------------------" << endl;
+        cout << "Order ID: " << orderID << "\nCustomer: " << customer << "\nOrder Status: " << orderStatus
+             << "\nTotal Cost: " << calculateTotalCost() << "$" << endl;
 
-        for (const auto& product : products) {
-            product.displayDetails();
-            cout << endl;
+        cout << "------------------------------Products in cart------------------------------" << endl;
+        for (const auto& product : productsInCart) {
+            cout << "Name: " << product.getName() << " Price: " << product.getPrice() << "$" << endl;
+        }
+
+        cout << "---------------------------------Confirming---------------------------------" << endl;
+        while (true){
+            string answer;
+            cout  << "Want to comfirm and pay? Write y/n: ";
+            getline(cin, answer);
+
+            if (answer == "y" || answer == "Yes" || answer == "yes") {
+                changeOrderStatus("Paid");
+                cout << "Order confirmed and paid." << endl;
+                break;
+            }
+            if (answer == "n" || answer == "No" || answer == "no"){
+                break;
+            }
+
+            else {
+                cout << "The command does not exist" << endl;
+            }
         }
     }
 
 private:
     int orderID;
     string customer;
-    vector<Product> products;
+    vector<Product> productsInCart;
     string orderStatus;
+    const vector<Product>& productCatalog;
 };
 
 class ProductCatalog {
@@ -142,9 +173,13 @@ public:
         products.push_back(product);
     }
 
+    vector<Product>& getProducts() {
+        return products;
+    }
+
     void updateProduct(const Product& updatedProduct) {
         for (auto& product : products) {
-            if (product.getType() == updatedProduct.getType()) {
+            if (product.getName() == updatedProduct.getName()) {
                 product = updatedProduct;
                 break;
             }
@@ -172,22 +207,30 @@ private:
 
 class Inventory {
 public:
-    void manageStock(string productType, int quantity) {
+    Inventory(vector<Product>& products) : products(products) {}
+
+    void manageStock(string productName, int quantity) {
         for (auto& product : products) {
-            if (product.getType() == productType) {
+            if (product.getName() == productName) {
                 product.setQuantityInStock(product.getQuantityInStock() + quantity);
+                cout << "Added " << quantity << " to " << productName << endl;
                 break;
             }
         }
     }
 
     void notifyLowStock() const {
+        bool lowStockFound = false;
+
         for (const auto& product : products) {
-            cout << product.getName();
-            cout << product.getQuantityInStock();
             if (product.getQuantityInStock() < lowStockThreshold) {
                 cout << "Low stock for product: " << product.getName() << endl;
+                lowStockFound = true;
             }
+        }
+
+        if (!lowStockFound) {
+            cout << "Nothing in low stock." << endl;
         }
     }
 
@@ -202,7 +245,7 @@ public:
     }
 
 private:
-    vector<Product> products;
+    vector<Product>& products;
     int lowStockThreshold = 10;
 };
 
@@ -247,14 +290,24 @@ void readProductConfig(const string& filename, ProductCatalog& catalog) {
 
 int main() {
     ProductCatalog catalog;
-    Inventory iventory;
+    Inventory inventory(catalog.getProducts());
     readProductConfig("product_config.txt", catalog);
     catalog.viewProducts();
 
     catalog.removeProduct("Laptop");
     catalog.viewProducts();
 
-    iventory.notifyLowStock();
+    inventory.notifyLowStock();
+    inventory.generateRestockList();
+    inventory.manageStock("SmartTV", 10);
+    inventory.notifyLowStock();
+
+    Order order1(1, "John Doe", catalog.getProducts());
+    order1.addProduct("TheCatcherintheRye");
+    order1.addProduct("SmartTV");
+
+    order1.displayOrder();
+
 
     return 0;
 }
