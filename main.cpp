@@ -281,48 +281,6 @@ private:
     int lowStockThreshold = 10;
 };
 
-void readProductConfig(const string& filename, ProductCatalog& catalog) {
-    ifstream file(filename);
-    string line;
-
-    while (getline(file, line)) {
-        line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
-        istringstream iss(line);
-        string productType, productName, brand, model, powerConsumption, author, genre, ISBN, size, color, material;
-        double price;
-        int quantity;
-
-        getline(iss, productType, ',');
-        getline(iss, productName, ',');
-        iss >> price;
-        iss.ignore();
-        iss >> quantity;
-        iss.ignore();
-
-        if (productType == "Electronics") {
-            getline(iss, brand, ',');
-            getline(iss, model, ',');
-            getline(iss, powerConsumption);
-            Electronics* electronic = new Electronics(productType, productName, price, quantity, brand, model, powerConsumption);
-            catalog.addProduct(electronic);
-        }
-        else if (productType == "Books") {
-            getline(iss, author, ',');
-            getline(iss, genre, ',');
-            getline(iss, ISBN);
-            Books* book = new Books(productType, productName, price, quantity, author, genre, ISBN);
-            catalog.addProduct(book);
-        }
-        else if (productType == "Clothing") {
-            getline(iss, size, ',');
-            getline(iss, color, ',');
-            getline(iss, material);
-            Clothing* clothing = new Clothing(productType, productName, price, quantity, size, color, material);
-            catalog.addProduct(clothing);
-        }
-    }
-}
-
 class Processes {
 public:
     static void start() {
@@ -378,7 +336,50 @@ public:
                     cout << "Invalid choice. Please try again." << endl;
             }
         }
+    };
+
+    static void readProductConfig(const string& filename, ProductCatalog& catalog) {
+        ifstream file(filename);
+        string line;
+
+        while (getline(file, line)) {
+            line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
+            istringstream iss(line);
+            string productType, productName, brand, model, powerConsumption, author, genre, ISBN, size, color, material;
+            double price;
+            int quantity;
+
+            getline(iss, productType, ',');
+            getline(iss, productName, ',');
+            iss >> price;
+            iss.ignore();
+            iss >> quantity;
+            iss.ignore();
+
+            if (productType == "Electronics") {
+                getline(iss, brand, ',');
+                getline(iss, model, ',');
+                getline(iss, powerConsumption);
+                Electronics* electronic = new Electronics(productType, productName, price, quantity, brand, model, powerConsumption);
+                catalog.addProduct(electronic);
+            }
+            else if (productType == "Books") {
+                getline(iss, author, ',');
+                getline(iss, genre, ',');
+                getline(iss, ISBN);
+                Books* book = new Books(productType, productName, price, quantity, author, genre, ISBN);
+                catalog.addProduct(book);
+            }
+            else if (productType == "Clothing") {
+                getline(iss, size, ',');
+                getline(iss, color, ',');
+                getline(iss, material);
+                Clothing* clothing = new Clothing(productType, productName, price, quantity, size, color, material);
+                catalog.addProduct(clothing);
+            }
+        }
     }
+
 
 private:
     static void displayMenu() {
