@@ -9,8 +9,8 @@ using namespace std;
 
 class Product {
 public:
-    Product(const string& name, double price, int quantity)
-            : name(name), price(price), quantityInStock(quantity) {}
+    Product(const string& productType, const string& name, double price, int quantity)
+            : productType(productType), name(name), price(price), quantityInStock(quantity) {}
 
     string getName() const {
         return name;
@@ -18,6 +18,10 @@ public:
 
     double getPrice() const {
         return price;
+    }
+
+    string getType() const {
+        return productType;
     }
 
     int getQuantityInStock() const {
@@ -28,13 +32,12 @@ public:
         quantityInStock = quantity;
     }
 
-    virtual double calculateTotalCost() const {
-        return price * quantityInStock;
+    void displayMain() const {
+        cout << "Name: " << name << ", Price: $" << price << ", Quantity in Stock: " << quantityInStock << endl;
     }
 
     virtual void displayDetails() const {
-        cout << "Name: " << name
-             << ", Price: $" << price << ", Quantity in Stock: " << quantityInStock << endl;
+        cout << "Name: " << name << ", Price: $" << price << ", Quantity in Stock: " << quantityInStock << endl;
     }
 
 protected:
@@ -46,13 +49,13 @@ protected:
 
 class Electronics : public Product {
 public:
-    Electronics(const string& name, double price, int quantity,
+    Electronics(const string& productType , const string& name, double price, int quantity,
                 const string& brand, const string& model, const string& powerConsumption)
-            : Product(name, price, quantity), brand(brand), model(model), powerConsumption(powerConsumption) {}
+            : Product(productType, name, price, quantity), brand(brand), model(model), powerConsumption(powerConsumption) {}
 
-    void displayDetails() const override {
+    void displayDetails() const {
         Product::displayDetails();
-        cout << ", Brand: " << brand << ", Model: " << model << ", Power Consumption: " << powerConsumption;
+        cout << "Brand: " << brand << ", Model: " << model << ", Power Consumption: " << powerConsumption << endl;
     }
 
 private:
@@ -63,30 +66,30 @@ private:
 
 class Books : public Product {
 public:
-Books(const string& name, double price, int quantity,
-      const string& author, const string& genre, const string& ISBN)
-        : Product(name, price, quantity), author(author), genre(genre), ISBN(ISBN) {}
+    Books(const string& productType , const string& name, double price, int quantity,
+          const string& author, const string& genre, const string& ISBN)
+            : Product(productType, name, price, quantity), author(author), genre(genre), ISBN(ISBN) {}
 
-void displayDetails() const override {
-Product::displayDetails();
-cout << ", Author: " << author << ", Genre: " << genre << ", ISBN: " << ISBN << endl;
-}
+    void displayDetails() const override {
+        Product::displayDetails();
+        cout << "Author: " << author << ", Genre: " << genre << ", ISBN: " << ISBN << endl;
+    }
 
 private:
-string author;
-string genre;
-string ISBN;
+    string author;
+    string genre;
+    string ISBN;
 };
 
 class Clothing : public Product {
 public:
-    Clothing(const string& name, double price, int quantity,
+    Clothing(const string& productType, const string& name, double price, int quantity,
              const string& size, const string& color, const string& material)
-            : Product(name, price, quantity), size(size), color(color), material(material) {}
+            : Product(productType, name, price, quantity), size(size), color(color), material(material) {}
 
     void displayDetails() const override {
         Product::displayDetails();
-        cout << ", Size: " << size << ", Color: " << color << ", Material: " << material << endl;
+        cout << "Size: " << size << ", Color: " << color << ", Material: " << material << endl;
     }
 
 private:
@@ -99,25 +102,32 @@ class Order {
 public:
     Order() : orderID(0), customer(""), orderStatus("Pending") {}
 
-    Order(int id, const string& customer, const vector<Product>& productCatalog)
+    Order(int id, const string& customer, const vector<Product*>& productCatalog)
             : orderID(id), customer(customer), orderStatus("Pending"), productCatalog(&productCatalog) {}
 
     void addProduct(const string& productName) {
-        auto productIt = find_if(productCatalog->begin(), productCatalog->end(),
-                                 [productName](const Product& p) { return p.getName() == productName; });
+        Product* foundProduct = nullptr;
+        for (auto product : *productCatalog) {
+            if (product->getName() == productName) {
+                foundProduct = product;
+                break;
+            }
+        }
 
-        if (productIt != productCatalog -> end()) {
-            productsInCart.push_back(*productIt);
+        if (foundProduct != nullptr) {
+            productsInCart.push_back(foundProduct);
             cout << "Added product to cart: " << productName << endl;
-        } else {
+        }
+        else {
             cout << "Product not found in catalog: " << productName << endl;
         }
     }
 
+
     double calculateTotalCost() const {
         double totalCost = 0.0;
         for (const auto& product : productsInCart) {
-            totalCost += product.getPrice();
+            totalCost += product->getPrice();
         }
         return totalCost;
     }
@@ -127,20 +137,21 @@ public:
     }
 
     void displayOrder() const {
-        cout << "\n--------------------------------Order Details-------------------------------" << endl;
+        cout << "--------------------------------Order Details-------------------------------" << endl;
         cout << "Order ID: " << orderID << "\nCustomer: " << customer << "\nOrder Status: " << orderStatus
              << "\nTotal Cost: " << calculateTotalCost() << "$" << endl;
 
         cout << "------------------------------Products in cart------------------------------" << endl;
         for (const auto& product : productsInCart) {
-            cout << "Name: " << product.getName() << " Price: " << product.getPrice() << "$" << endl;
+            cout << "Name: " << product->getName() << " Price: " << product->getPrice() << "$" << endl;
         }
 
-        if (orderStatus == "Pending"){
+        if (orderStatus == "Pending") {
             cout << "---------------------------------Confirming---------------------------------" << endl;
-            while (true){
+            while (true) {
                 string answer;
-                cout  << "Want to comfirm and pay? Write y/n: ";
+                cout << "Want to confirm and pay? Write y/n: ";
+                cin.ignore();
                 getline(cin, answer);
 
                 if (answer == "y" || answer == "Yes" || answer == "yes") {
@@ -148,7 +159,7 @@ public:
                     cout << "Order confirmed and paid." << endl;
                     break;
                 }
-                if (answer == "n" || answer == "No" || answer == "no"){
+                if (answer == "n" || answer == "No" || answer == "no") {
                     break;
                 }
 
@@ -162,24 +173,24 @@ public:
 private:
     int orderID;
     string customer;
-    vector<Product> productsInCart;
+    vector<Product*> productsInCart;
     mutable string orderStatus;
-    const vector<Product>* productCatalog;
+    const vector<Product*>* productCatalog;
 };
 
 class ProductCatalog {
 public:
-    void addProduct(const Product& product) {
+    void addProduct(Product* product) {
         products.push_back(product);
     }
 
-    vector<Product>& getProducts() {
+    vector<Product*>& getProducts() {
         return products;
     }
 
-    void updateProduct(const Product& updatedProduct) {
+    void updateProduct(Product* updatedProduct) {
         for (auto& product : products) {
-            if (product.getName() == updatedProduct.getName()) {
+            if (product->getName() == updatedProduct->getName()) {
                 product = updatedProduct;
                 break;
             }
@@ -187,34 +198,55 @@ public:
     }
 
     void removeProduct(string productName) {
-        products.erase(remove_if(products.begin(), products.end(),
-                                 [productName](const Product& p) { return p.getName() == productName; }),
-                       products.end());
+        for (auto it = products.begin(); it != products.end(); ) {
+            if ((*it)->getName() == productName) {
+                it = products.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
     }
+
 
     void viewProducts() const {
         cout << "----------------------Catalog----------------------" << endl;
         for (const auto& product : products) {
-            product.displayDetails();
+            product->displayMain();
             cout << endl;
         }
         cout << "---------------------------------------------------" << endl;
     }
 
+    void filterProducts(const string& productType, const string& additionalDescription) const {
+        cout << "----------------------Filtered Products----------------------" << endl;
+        for (const auto& product : products) {
+            if (product->getType() == productType) {
+                product->displayMain();
+                if (additionalDescription != "") {
+                    cout << "Additional Description: " << additionalDescription << endl;
+                }
+                cout << endl;
+            }
+        }
+        cout << "--------------------------------------------------------------" << endl;
+    }
+
 private:
-    vector<Product> products;
+    vector<Product*> products;
 };
 
 class Inventory {
 public:
-    Inventory(vector<Product>& products) : products(products) {}
+    Inventory(vector<Product*>& products) : products(products) {}
 
     void manageStock(string productName, int quantity) {
         for (auto& product : products) {
-            if (product.getName() == productName) {
-                product.setQuantityInStock(product.getQuantityInStock() + quantity);
+            if (product->getName() == productName) {
+                product->setQuantityInStock(product->getQuantityInStock() + quantity);
                 cout << "Added " << quantity << " to " << productName << endl;
                 break;
+
             }
         }
     }
@@ -223,8 +255,8 @@ public:
         bool lowStockFound = false;
 
         for (const auto& product : products) {
-            if (product.getQuantityInStock() < lowStockThreshold) {
-                cout << "Low stock for product: " << product.getName() << endl;
+            if (product->getQuantityInStock() < lowStockThreshold) {
+                cout << "Low stock for product: " << product->getName() << endl;
                 lowStockFound = true;
             }
         }
@@ -234,10 +266,10 @@ public:
         }
     }
 
-    vector<Product> generateRestockList() const {
-        vector<Product> restockList;
+    vector<Product*> generateRestockList() const {
+        vector<Product*> restockList;
         for (const auto& product : products) {
-            if (product.getQuantityInStock() < lowStockThreshold) {
+            if (product->getQuantityInStock() < lowStockThreshold) {
                 restockList.push_back(product);
             }
         }
@@ -245,7 +277,7 @@ public:
     }
 
 private:
-    vector<Product>& products;
+    vector<Product*>& products;
     int lowStockThreshold = 10;
 };
 
@@ -254,7 +286,7 @@ void readProductConfig(const string& filename, ProductCatalog& catalog) {
     string line;
 
     while (getline(file, line)) {
-        line.erase(std::remove_if(line.begin(), line.end(), ::isspace), line.end());
+        line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
         istringstream iss(line);
         string productType, productName, brand, model, powerConsumption, author, genre, ISBN, size, color, material;
         double price;
@@ -265,24 +297,27 @@ void readProductConfig(const string& filename, ProductCatalog& catalog) {
         iss >> price;
         iss.ignore();
         iss >> quantity;
+        iss.ignore();
 
         if (productType == "Electronics") {
             getline(iss, brand, ',');
             getline(iss, model, ',');
             getline(iss, powerConsumption);
-            Electronics electronic(productName, price, quantity, brand, model, powerConsumption);
+            Electronics* electronic = new Electronics(productType, productName, price, quantity, brand, model, powerConsumption);
             catalog.addProduct(electronic);
-        } else if (productType == "Books") {
+        }
+        else if (productType == "Books") {
             getline(iss, author, ',');
             getline(iss, genre, ',');
             getline(iss, ISBN);
-            Books book(productName, price, quantity, author, genre, ISBN);
+            Books* book = new Books(productType, productName, price, quantity, author, genre, ISBN);
             catalog.addProduct(book);
-        } else if (productType == "Clothing") {
+        }
+        else if (productType == "Clothing") {
             getline(iss, size, ',');
             getline(iss, color, ',');
             getline(iss, material);
-            Clothing clothing(productName, price, quantity, size, color, material);
+            Clothing* clothing = new Clothing(productType, productName, price, quantity, size, color, material);
             catalog.addProduct(clothing);
         }
     }
@@ -301,7 +336,8 @@ public:
 
         while (true) {
             int choice = 0;
-            cout << "Enter your choice: ";
+            cout << "Enter your choice:" << endl;
+            cout << "> ";
             cin >> choice;
 
             switch (choice) {
@@ -312,27 +348,30 @@ public:
                     viewProductDetails(catalog);
                     break;
                 case 3:
-                    createOrder(order, catalog.getProducts());
+                    showFilteredProducts(catalog);
                     break;
                 case 4:
-                    addProductToOrder(order, catalog.getProducts());
+                    createOrder(order, catalog.getProducts());
                     break;
                 case 5:
-                    displayOrder(order);
+                    addProductToOrder(order, catalog.getProducts());
                     break;
                 case 6:
-                    removeProductFromCatalog(catalog);
+                    displayOrder(order);
                     break;
                 case 7:
-                    notifyLowStock(inventory);
+                    removeProductFromCatalog(catalog);
                     break;
                 case 8:
-                    generateRestockList(inventory);
+                    notifyLowStock(inventory);
                     break;
                 case 9:
-                    manageStock(inventory);
+                    generateRestockList(inventory);
                     break;
                 case 10:
+                    manageStock(inventory);
+                    break;
+                case 11:
                     cout << "Exiting the program." << endl;
                     return;
                 default:
@@ -346,14 +385,15 @@ private:
         cout << "\n---------------------- Menu ----------------------" << endl;
         cout << "1. View Catalog" << endl;
         cout << "2. View Product details" << endl;
-        cout << "3. Create Order" << endl;
-        cout << "4. Add Product to Order" << endl;
-        cout << "5. Display Order" << endl;
-        cout << "6. Remove Product from Catalog" << endl;
-        cout << "7. Notify Low Stock" << endl;
-        cout << "8. Generate Restock List" << endl;
-        cout << "9. Manage Stock" << endl;
-        cout << "10. Exit" << endl;
+        cout << "3. Show Filtered Products" << endl;
+        cout << "4. Create Order" << endl;
+        cout << "5. Add Product to Order" << endl;
+        cout << "6. Display Order" << endl;
+        cout << "7. Remove Product from Catalog" << endl;
+        cout << "8. Notify Low Stock" << endl;
+        cout << "9. Generate Restock List" << endl;
+        cout << "10. Manage Stock" << endl;
+        cout << "11. Exit" << endl;
         cout << "---------------------------------------------------" << endl;
     }
 
@@ -367,17 +407,41 @@ private:
         cin.ignore();
         getline(cin, productName);
 
-        auto productIt = find_if(catalog.getProducts().begin(), catalog.getProducts().end(),
-                                 [productName](const Product& p) { return p.getName() == productName; });
+        Product* foundProduct = nullptr;
+        for (auto& product : catalog.getProducts()) {
+            if (product->getName() == productName) {
+                foundProduct = product;
+                break;
+            }
+        }
 
-        if (productIt != catalog.getProducts().end()) {
+        if (foundProduct != nullptr) {
             cout << "----------------------Product Details----------------------" << endl;
-            productIt->displayDetails();
-            cout << "-------------------------------------------------------------" << endl;
-        } else {
+
+            Clothing* clothing = dynamic_cast<Clothing*>(foundProduct);
+            Electronics* electronics = dynamic_cast<Electronics*>(foundProduct);
+            Books* books = dynamic_cast<Books*>(foundProduct);
+
+            if (clothing) {
+                clothing->displayDetails();
+            }
+            else if (electronics) {
+                electronics->displayDetails();
+            }
+            else if (books) {
+                books->displayDetails();
+            }
+            else {
+                foundProduct->displayDetails();
+            }
+
+            cout << "-----------------------------------------------------------" << endl;
+        }
+        else {
             cout << "Product not found in catalog: " << productName << endl;
         }
     }
+
 
     static void removeProductFromCatalog(ProductCatalog& catalog) {
         string productName;
@@ -396,7 +460,7 @@ private:
         auto restockList = inventory.generateRestockList();
         cout << "Restock List:" << endl;
         for (const auto& product : restockList) {
-            product.displayDetails();
+            product->displayDetails();
             cout << endl;
         }
     }
@@ -412,7 +476,7 @@ private:
         inventory.manageStock(productName, quantity);
     }
 
-    static void createOrder(Order& order, const vector<Product>& productCatalog) {
+    static void createOrder(Order& order, const vector<Product*>& productCatalog) {
         string customerName;
         cout << "Enter customer name for the order: ";
         cin.ignore();
@@ -422,7 +486,7 @@ private:
         cout << "Order created for customer: " << customerName << endl;
     }
 
-    static void addProductToOrder(Order& order, const vector<Product>& productCatalog) {
+    static void addProductToOrder(Order& order, const vector<Product*>& productCatalog) {
         string productName;
         cout << "Enter the name of the product to add to the order: ";
         cin.ignore();
@@ -432,6 +496,20 @@ private:
 
     static void displayOrder(const Order& order) {
         order.displayOrder();
+    }
+
+    static void showFilteredProducts(const ProductCatalog& catalog) {
+        string productType;
+        string additionalDescription;
+
+        cout << "Enter the product type: ";
+        cin >> productType;
+
+        cout << "Enter additional description (press Enter if not applicable): ";
+        cin.ignore();
+        getline(cin, additionalDescription);
+
+        catalog.filterProducts(productType, additionalDescription);
     }
 };
 
