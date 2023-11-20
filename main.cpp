@@ -10,7 +10,15 @@ using namespace std;
 class Product {
 public:
     Product(const string& productType, const string& name, double price, int quantity)
-            : productType(productType), name(name), price(price), quantityInStock(quantity) {}
+            : productType(move(productType)), name(move(name)), price(move(price)), quantityInStock(move(quantity)) {}
+
+    Product(Product& other) : productType(other.productType), price(other.price), quantityInStock(other.quantityInStock){}
+
+    Product(Product&& other) noexcept : name(move(other.name)), price(move(other.price)), quantityInStock(move(other.quantityInStock)) {
+        other.name = "";
+        other.price = 0;
+        other.quantityInStock = 0;
+    }
 
     string getName() const {
         return name;
@@ -50,8 +58,8 @@ protected:
 class Electronics : public Product {
 public:
     Electronics(const string& productType , const string& name, double price, int quantity,
-                const string& brand, const string& model, const string& powerConsumption)
-            : Product(productType, name, price, quantity), brand(brand), model(model), powerConsumption(powerConsumption) {}
+                 string& brand, string& model, string& powerConsumption)
+            : Product(productType, name, price, quantity), brand(move(brand)), model(move(model)), powerConsumption(move(powerConsumption)) {}
 
     void displayDetails() const {
         Product::displayDetails();
@@ -68,7 +76,7 @@ class Books : public Product {
 public:
     Books(const string& productType , const string& name, double price, int quantity,
           const string& author, const string& genre, const string& ISBN)
-            : Product(productType, name, price, quantity), author(author), genre(genre), ISBN(ISBN) {}
+            : Product(productType, name, price, quantity), author(move(author)), genre(move(genre)), ISBN(move(ISBN)) {}
 
     void displayDetails() const override {
         Product::displayDetails();
@@ -85,7 +93,7 @@ class Clothing : public Product {
 public:
     Clothing(const string& productType, const string& name, double price, int quantity,
              const string& size, const string& color, const string& material)
-            : Product(productType, name, price, quantity), size(size), color(color), material(material) {}
+            : Product(productType, name, price, quantity), size(move(size)), color(move(color)), material(move(material)) {}
 
     void displayDetails() const override {
         Product::displayDetails();
@@ -103,7 +111,7 @@ public:
     Order() : orderID(0), customer(""), orderStatus("Pending") {}
 
     Order(int id, const string& customer, const vector<Product*>& productCatalog)
-            : orderID(id), customer(customer), orderStatus("Pending"), productCatalog(&productCatalog) {}
+            : orderID(move(id)), customer(move(customer)), orderStatus(move("Pending")), productCatalog(move(&productCatalog)) {}
 
     void addProduct(const string& productName) {
         Product* foundProduct = nullptr;
@@ -218,14 +226,11 @@ public:
         cout << "---------------------------------------------------" << endl;
     }
 
-    void filterProducts(const string& productType, const string& additionalDescription) const {
+    void filterProducts(const string& productType) const {
         cout << "----------------------Filtered Products----------------------" << endl;
         for (const auto& product : products) {
             if (product->getType() == productType) {
                 product->displayMain();
-                if (additionalDescription != "") {
-                    cout << "Additional Description: " << additionalDescription << endl;
-                }
                 cout << endl;
             }
         }
@@ -380,7 +385,6 @@ public:
         }
     }
 
-
 private:
     static void displayMenu() {
         cout << "\n---------------------- Menu ----------------------" << endl;
@@ -417,32 +421,12 @@ private:
         }
 
         if (foundProduct != nullptr) {
-            cout << "----------------------Product Details----------------------" << endl;
-
-            Clothing* clothing = dynamic_cast<Clothing*>(foundProduct);
-            Electronics* electronics = dynamic_cast<Electronics*>(foundProduct);
-            Books* books = dynamic_cast<Books*>(foundProduct);
-
-            if (clothing) {
-                clothing->displayDetails();
-            }
-            else if (electronics) {
-                electronics->displayDetails();
-            }
-            else if (books) {
-                books->displayDetails();
-            }
-            else {
-                foundProduct->displayDetails();
-            }
-
-            cout << "-----------------------------------------------------------" << endl;
+            foundProduct->displayDetails();
         }
         else {
             cout << "Product not found in catalog: " << productName << endl;
         }
     }
-
 
     static void removeProductFromCatalog(ProductCatalog& catalog) {
         string productName;
@@ -501,16 +485,11 @@ private:
 
     static void showFilteredProducts(const ProductCatalog& catalog) {
         string productType;
-        string additionalDescription;
 
         cout << "Enter the product type: ";
         cin >> productType;
 
-        cout << "Enter additional description (press Enter if not applicable): ";
-        cin.ignore();
-        getline(cin, additionalDescription);
-
-        catalog.filterProducts(productType, additionalDescription);
+        catalog.filterProducts(productType);
     }
 };
 
