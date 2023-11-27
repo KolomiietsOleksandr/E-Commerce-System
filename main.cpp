@@ -4,56 +4,9 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "Product.h"
 
 using namespace std;
-
-class Product {
-public:
-    Product(const string& productType, const string& name, double price, int quantity)
-            : productType(move(productType)), name(move(name)), price(move(price)), quantityInStock(move(quantity)) {}
-
-    Product(Product& other) : productType(other.productType), price(other.price), quantityInStock(other.quantityInStock){}
-
-    Product(Product&& other) noexcept : name(move(other.name)), price(move(other.price)), quantityInStock(move(other.quantityInStock)) {
-        other.name = "";
-        other.price = 0;
-        other.quantityInStock = 0;
-    }
-
-    string getName() const {
-        return name;
-    }
-
-    double getPrice() const {
-        return price;
-    }
-
-    string getType() const {
-        return productType;
-    }
-
-    int getQuantityInStock() const {
-        return quantityInStock;
-    }
-
-    void setQuantityInStock(int quantity) {
-        quantityInStock = quantity;
-    }
-
-    void displayMain() const {
-        cout << "Name: " << name << ", Price: $" << price << ", Quantity in Stock: " << quantityInStock << endl;
-    }
-
-    virtual void displayDetails() const {
-        cout << "Name: " << name << ", Price: $" << price << ", Quantity in Stock: " << quantityInStock << endl;
-    }
-
-protected:
-    string productType;
-    string name;
-    double price;
-    int quantityInStock;
-};
 
 class Electronics : public Product {
 public:
