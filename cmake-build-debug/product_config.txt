@@ -1,4 +1,6 @@
 Electronics, Laptop, 799.99, 10, Dell, Inspiron 15, 45W
+Electronics, TopTop, 549.99, 13, Dell, Shosho 13, 35W
+Electronics, GasTop, 999.99, 15, Dell, Quantom 1, 15W
 Electronics, Smartphone, 499.99, 15, Apple, iPhone 12, 5.0 inches
 Electronics, Smart TV, 699.99, 5, Samsung, 4K UHD, 55 inches
 

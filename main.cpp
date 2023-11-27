@@ -66,6 +66,18 @@ public:
         cout << "Brand: " << brand << ", Model: " << model << ", Power Consumption: " << powerConsumption << endl;
     }
 
+    string getBrand() const {
+        return brand;
+    }
+
+    string getModel() const {
+        return model;
+    }
+
+    string getPower() const {
+        return powerConsumption;
+    }
+
 private:
     string brand;
     string model;
@@ -83,6 +95,18 @@ public:
         cout << "Author: " << author << ", Genre: " << genre << ", ISBN: " << ISBN << endl;
     }
 
+    string getAuthor() const {
+        return author;
+    }
+
+    string getGenre() const {
+        return genre;
+    }
+
+    string getISBN() const {
+        return ISBN;
+    }
+
 private:
     string author;
     string genre;
@@ -98,6 +122,18 @@ public:
     void displayDetails() const override {
         Product::displayDetails();
         cout << "Size: " << size << ", Color: " << color << ", Material: " << material << endl;
+    }
+
+    string getSize() const {
+        return size;
+    }
+
+    string getColor() const {
+        return color;
+    }
+
+    string getMaterial() const {
+        return material;
     }
 
 private:
@@ -226,12 +262,20 @@ public:
         cout << "---------------------------------------------------" << endl;
     }
 
-    void filterProducts(const string& productType) const {
+    void filterProducts(const string& productType, const string& additionalParameter = "") const {
         cout << "----------------------Filtered Products----------------------" << endl;
         for (const auto& product : products) {
             if (product->getType() == productType) {
-                product->displayMain();
-                cout << endl;
+                if (additionalParameter == ""){
+                    product->displayDetails();
+                    cout << endl;
+                }
+                else{
+                    if (checkAdditionalParameter(product, additionalParameter)) {
+                        product->displayDetails();
+                        cout << endl;
+                    }
+                }
             }
         }
         cout << "--------------------------------------------------------------" << endl;
@@ -239,6 +283,29 @@ public:
 
 private:
     vector<Product*> products;
+
+    bool checkAdditionalParameter(const Product* product, const string& additionalParameter) const {
+        if (product->getType() == "Electronics") {
+            const Electronics* electronicProduct = dynamic_cast<const Electronics*>(product);
+            return (electronicProduct &&
+                    (electronicProduct->getBrand() == additionalParameter ||
+                     electronicProduct->getModel() == additionalParameter ||
+                     electronicProduct->getPower() == additionalParameter));
+        } else if (product->getType() == "Books") {
+            const Books* bookProduct = dynamic_cast<const Books*>(product);
+            return (bookProduct &&
+                    (bookProduct->getAuthor() == additionalParameter ||
+                     bookProduct->getGenre() == additionalParameter ||
+                     bookProduct->getISBN() == additionalParameter));
+        } else if (product->getType() == "Clothing") {
+            const Clothing* clothingProduct = dynamic_cast<const Clothing*>(product);
+            return (clothingProduct &&
+                    (clothingProduct->getSize() == additionalParameter ||
+                     clothingProduct->getColor() == additionalParameter ||
+                     clothingProduct->getMaterial() == additionalParameter));
+        }
+        return true;
+    }
 };
 
 class Inventory {
@@ -485,11 +552,17 @@ private:
 
     static void showFilteredProducts(const ProductCatalog& catalog) {
         string productType;
+        string additionalParameter;
 
         cout << "Enter the product type: ";
         cin >> productType;
 
-        catalog.filterProducts(productType);
+        // Питайте також про додатковий параметр
+        cout << "Enter the additional parameter (or press Enter to skip): ";
+        cin.ignore();
+        getline(cin, additionalParameter);
+
+        catalog.filterProducts(productType, additionalParameter);
     }
 };
 
