@@ -1,20 +1,22 @@
 #include "Product.h"
 #include <iostream>
 
-Product::Product(const std::string& productType, const std::string& name, double price, int quantity)
-        : productType(productType), name(name), price(price), quantityInStock(quantity) {}
+using namespace std;
+
+Product::Product(const string& productType, const string& name, double price, int quantity)
+        : productType(move(productType)), name(move(name)), price(move(price)), quantityInStock(move(quantity)) {}
 
 Product::Product(const Product& other)
         : productType(other.productType), name(other.name), price(other.price), quantityInStock(other.quantityInStock) {}
 
 Product::Product(Product&& other) noexcept
-        : name(std::move(other.name)), price(other.price), quantityInStock(other.quantityInStock) {
+        : name(move(other.name)), price(move(other.price)), quantityInStock(move(other.quantityInStock)) {
     other.name = "";
     other.price = 0;
     other.quantityInStock = 0;
 }
 
-std::string Product::getName() const {
+string Product::getName() const {
     return name;
 }
 
@@ -22,7 +24,7 @@ double Product::getPrice() const {
     return price;
 }
 
-std::string Product::getType() const {
+string Product::getType() const {
     return productType;
 }
 

@@ -510,7 +510,6 @@ private:
         cout << "Enter the product type: ";
         cin >> productType;
 
-        // Питайте також про додатковий параметр
         cout << "Enter the additional parameter (or press Enter to skip): ";
         cin.ignore();
         getline(cin, additionalParameter);
@@ -519,8 +518,57 @@ private:
     }
 };
 
+class Figure
+{
+    string name;
+public:
+    Figure(const string name) : name(name) {}
+
+    Figure(Figure& other) : name(other.name) {}
+
+    Figure(Figure&& other) noexcept: name(other.name) {
+        name = "";
+    }
+
+    void display_name()
+    {
+        cout << name << endl;
+    }
+
+    virtual void set_radius(const double r){}
+
+    virtual ~Figure()
+    {
+
+    }
+};
+
+class Circle : public Figure
+{
+    double radius;
+public:
+    Circle(const string name, const double radius) : Figure(name), radius(radius) {}
+
+    ~Circle() override {}
+
+    void set_radius(const double r)
+    {
+        radius = r;
+        cout << r << endl;
+    }
+};
+
+
+
 int main() {
-    Processes::start();
+    Figure* f = new Circle("f", 4);
+    f->set_radius(5);
+
+    Figure* c = new Circle("f", 5);
+    Circle* b = dynamic_cast<Circle*>(f);
+    b->set_radius(10);
+
+//    Processes::start();
 
     return 0;
 }
